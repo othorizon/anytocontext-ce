@@ -1,0 +1,20 @@
+{
+  "name": "anytocontext-agent-worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev --env dev --port 8790",
+    "deploy:dev": "wrangler deploy --env dev",
+    "deploy:prod": "wrangler deploy --env prod",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@cloudflare/sandbox": "^0.8.9",
+    "openai": "^4.77.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260525.1",
+    "typescript": "^5.5.2",
+    "wrangler": "^4.54.0"
+  }
+}

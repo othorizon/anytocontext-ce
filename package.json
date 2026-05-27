@@ -1,0 +1,72 @@
+{
+  "name": "anytocontext",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@clerk/shared",
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma"
+    ]
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1053.0",
+    "@aws-sdk/s3-request-presigner": "^3.1053.0",
+    "@clerk/localizations": "^4.6.8",
+    "@clerk/nextjs": "^7.4.1",
+    "@clerk/themes": "^2.4.57",
+    "@dagrejs/dagre": "^3.0.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@xyflow/react": "^12.10.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.16.0",
+    "monaco-editor": "^0.55.1",
+    "nanoid": "^5.1.11",
+    "next": "16.2.6",
+    "radix-ui": "^1.4.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "shadcn": "^4.8.0",
+    "sonner": "^2.0.7",
+    "sshpk": "^1.18.0",
+    "swr": "^2.4.1",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0",
+    "use-debounce": "^10.1.1",
+    "ws": "^8.21.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/sshpk": "^1.17.4",
+    "@types/ws": "^8.18.1",
+    "dotenv": "^17.4.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.3",
+    "typescript": "^5"
+  }
+}

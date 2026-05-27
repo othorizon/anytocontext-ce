@@ -1,0 +1,121 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "anytocontext-agent-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-01-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Sandbox"] },
+    { "tag": "v2", "new_sqlite_classes": ["SandboxLifecycle"] },
+    { "tag": "v3", "deleted_classes": ["SandboxLifecycle"] }
+  ],
+  /**
+   * 运行时必需的 secrets（通过 wrangler secret put --env <env> 设置）：
+   * - INTERNAL_API_SECRET           主应用 ↔ worker 互信
+   * - R2_ACCESS_KEY_ID              用于 sandbox.mountBucket 的 S3 凭证
+   * - R2_SECRET_ACCESS_KEY
+   * - OPENAI_BASE_URL               OpenAI 兼容服务端 base URL
+   * - OPENAI_API_KEY                OpenAI 兼容服务端 API Key
+   * - OPENAI_MODEL                  模型名（如 gpt-4o-mini）
+   *
+   * 本地开发：在同目录创建 .dev.vars（不要提交），与上述 key 一致即可。
+   * 部署：pnpm wrangler secret put OPENAI_API_KEY --env prod
+   */
+  "env": {
+    "dev": {
+      "name": "anytocontext-agent-worker-dev",
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 1
+      },
+      "vars": {
+        "R2_BUCKET": "REPLACE_WITH_YOUR_DEV_BUCKET",
+        "R2_S3_ENDPOINT": "https://REPLACE_WITH_YOUR_ACCOUNT_ID.r2.cloudflarestorage.com",
+        "IS_LOCAL_DEV": "true",
+        // worker → 主应用回调，访问主应用 dev 服务（端口与 pnpm dev 输出对齐）
+        "MAIN_APP_BASE_URL": "http://localhost:3001"
+      },
+      "workflows": [
+        {
+          "name": "anytocontext-agent-workflow-dev",
+          "binding": "AGENT_WORKFLOW",
+          "class_name": "AgentWorkflow"
+        },
+        {
+          "name": "anytocontext-build-workflow-dev",
+          "binding": "BUILD_WORKFLOW",
+          "class_name": "BuildWorkflow"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "FILES",
+          "bucket_name": "REPLACE_WITH_YOUR_DEV_BUCKET",
+          "remote": true
+        },
+        {
+          "binding": "BACKUP_BUCKET",
+          "bucket_name": "REPLACE_WITH_YOUR_DEV_BUCKET",
+          "remote": true
+        }
+      ],
+      "containers": [
+        {
+          "class_name": "Sandbox",
+          "image": "./Dockerfile",
+          // lite = 1/16 vCPU / 256 MiB / 2 GB disk（最小档）；不够再调到 basic / standard-1
+          "instance_type": "lite",
+          "max_instances": 20
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          { "name": "Sandbox", "class_name": "Sandbox" }
+        ]
+      }
+    },
+    "prod": {
+      "name": "anytocontext-agent-worker",
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 0.1
+      },
+      "vars": {
+        "R2_BUCKET": "REPLACE_WITH_YOUR_PROD_BUCKET",
+        "R2_S3_ENDPOINT": "https://REPLACE_WITH_YOUR_ACCOUNT_ID.r2.cloudflarestorage.com",
+        // 上线时改成主应用真实 base URL
+        "MAIN_APP_BASE_URL": "https://example.com"
+      },
+      "workflows": [
+        {
+          "name": "anytocontext-agent-workflow",
+          "binding": "AGENT_WORKFLOW",
+          "class_name": "AgentWorkflow"
+        },
+        {
+          "name": "anytocontext-build-workflow",
+          "binding": "BUILD_WORKFLOW",
+          "class_name": "BuildWorkflow"
+        }
+      ],
+      "r2_buckets": [
+        { "binding": "FILES", "bucket_name": "REPLACE_WITH_YOUR_PROD_BUCKET" },
+        { "binding": "BACKUP_BUCKET", "bucket_name": "REPLACE_WITH_YOUR_PROD_BUCKET" }
+      ],
+      "containers": [
+        {
+          "class_name": "Sandbox",
+          "image": "./Dockerfile",
+          // lite = 1/16 vCPU / 256 MiB / 2 GB disk（最小档）；不够再调到 basic / standard-1
+          "instance_type": "lite",
+          "max_instances": 100
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          { "name": "Sandbox", "class_name": "Sandbox" }
+        ]
+      }
+    }
+  }
+}

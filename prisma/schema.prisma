@@ -1,0 +1,119 @@
+// anytocontext —— 完整数据模型
+// 设计详见 /Users/rizon/.claude/plans/agent-cheerful-raccoon.md 第二节
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ────────────────────────────────────────────────────────────
+// Project：项目本体；graph 字段用 JSON 存 n8n 风格 workflow（节点 + 边）
+// ────────────────────────────────────────────────────────────
+model Project {
+  id        String   @id @default(cuid())
+  userId    String // Clerk userId
+  name      String
+  // 构建 graph：{ nodes: WorkflowNode[], edges: Edge[] }，结构定义见 lib/dto/workflow.ts
+  graph     Json     @default("{}")
+  // 对话 graph：固定 chat-input → chat-model 两节点，承载模型/系统提示词，
+  // 结构定义见 lib/dto/chat-graph.ts。空对象由 DTO 层兜底为 defaultChatGraph()。
+  chatGraph Json     @default("{}")
+  // Cloudflare Sandbox SDK DirectoryBackup 句柄 { id, dir, localBucket? }；
+  // 只保留最新一份成功构建产物，每次构建覆盖；查询前先用它 restoreWorkspace。
+  currentBackup Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  builds     Build[]
+  queryTasks QueryTask[]
+
+  @@index([userId])
+}
+
+// ────────────────────────────────────────────────────────────
+// Build：一次构建任务；id 同时作为 Cloudflare BuildWorkflow instanceId
+// ────────────────────────────────────────────────────────────
+enum BuildStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+model Build {
+  id        String      @id @default(cuid())
+  projectId String
+  status    BuildStatus @default(PENDING)
+  // R2 对象 key（user/<uid>/<pid>/_builds/<buildId>.log）
+  logKey    String?
+  error     String?
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime    @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+}
+
+// ────────────────────────────────────────────────────────────
+// QueryTask：一次对话查询；id 同时作为 Cloudflare AgentWorkflow instanceId
+// 状态/结果不存在这里 —— 全部从 instance.status() 读
+// 这张表仅用于鉴权（taskId → projectId/userId 归属）
+// ────────────────────────────────────────────────────────────
+model QueryTask {
+  id        String   @id // = AgentWorkflow instanceId
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([projectId])
+}
+
+// ────────────────────────────────────────────────────────────
+// Credential：SSH Key 等加密凭证；payload 用 AES-256-GCM 加密
+// ────────────────────────────────────────────────────────────
+enum CredentialType {
+  SSH_KEY
+}
+
+model Credential {
+  id        String         @id @default(cuid())
+  userId    String
+  name      String
+  type      CredentialType
+  // AES-256-GCM 加密后的 JSON：base64(iv):base64(authTag):base64(ciphertext)
+  payload   String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId])
+}
+
+// ────────────────────────────────────────────────────────────
+// ApiKey：MCP / 程序化访问凭据；明文只在创建时返回一次
+// ────────────────────────────────────────────────────────────
+model ApiKey {
+  id           String    @id @default(cuid())
+  userId       String
+  name         String
+  // sha256(key) 的十六进制；明文只在创建时返回给前端一次
+  keyHash      String    @unique
+  // 展示用前缀，例如 "at_abc123"
+  prefix       String
+  // scopeAll = true 时，该 key 可访问当前用户的任意项目（含未来新建）；
+  // 否则按 projectScope 列出的 projectId 列表精确授权。
+  scopeAll     Boolean   @default(false)
+  projectScope String[]  @default([])
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  @@index([userId])
+}
