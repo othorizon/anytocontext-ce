@@ -20,21 +20,19 @@ an agent answer natural-language questions over it.
 
 ---
 
-## What it does
+## Overview
 
-**Turn anything into information your agent can query directly.** Through a
-highly flexible build workflow, package up any data you want to expose, and
-let an agent answer natural-language questions over it.
+Through a custom build pipeline, anytocontext turns anything — a code
+repository, a webpage, any content you care about — into a file-system-
+based knowledge base. Your agent reads from it directly, or visitors call
+the agent through a chat box embedded on a webpage.
 
-- Define a **build workflow** as a graph: pull a Git repo, write a markdown
-  doc, run a shell script. Each node produces files; the **build node**
-  assembles them under `/workspace` and snapshots the result to object
-  storage.
-- Define a **chat workflow** with a system prompt that can reference any
-  assembled data source by name (e.g. `{source.docs.path}`).
-- Open the **Playground** or connect from any MCP-compatible client (Claude
-  Desktop, IDE plugins, etc.) and ask questions; the agent runs in a
-  sandboxed container with read access to the workspace.
+**Why this exists.** Sometimes you need to share part of your data with
+others, but exposing the raw source material is too risky. anytocontext
+lets you configure data-cleaning and redaction steps during the build, so
+only the content that is safe to publish becomes queryable agent
+knowledge. Others can get the authorized knowledge by talking to your
+agent directly, without touching the original data.
 
 ## Use cases
 
