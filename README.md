@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./public/banner.svg" alt="anytocontext — Turn anything into context for your AI agent." width="100%">
+
 # anytocontext
 
 **Community Edition**
@@ -9,6 +11,10 @@ data you want to expose through a flexible visual build workflow, then let
 an agent answer natural-language questions over it.
 
 [Website](https://anytocontext.com) · [English](./README.md) · [简体中文](./README.zh-CN.md)
+
+<p>
+  <strong><a href="https://anytocontext.com">🚀 Try the hosted version</a></strong>
+</p>
 
 </div>
 

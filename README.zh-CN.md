@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./public/banner.svg" alt="anytocontext — 把任何资料变成 AI Agent 的上下文。" width="100%">
+
 # anytocontext
 
 **社区版**
@@ -8,6 +10,10 @@
 打包你想开放的数据，让 Agent 直接用自然语言回答。
 
 [官网](https://anytocontext.com) · [English](./README.md) · [简体中文](./README.zh-CN.md)
+
+<p>
+  <strong><a href="https://anytocontext.com">🚀 快速体验在线版</a></strong>
+</p>
 
 </div>
 
